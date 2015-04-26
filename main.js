@@ -20,17 +20,6 @@ const makeRegionFormat = (region, mainLanguage) => {
     "use strict";
 
     const handleResult = (err, result) => {
-        //console.log("result:");
-        //console.log(result);
-        // Just to have a look at the result
-        //const resultString = JSON.stringify(result);
-        //console.log(resultString);
-        // Real work
-        //console.log("result.ldml.numbers[0].symbols:");
-        //console.log(result.ldml.numbers[0].symbols[0].decimal[0]);
-        //console.log(result.ldml.numbers[0].symbols[0].group[0]);
-        //console.log("result.ldml.numbers.currencyFormats:");
-        //console.log(result.ldml.numbers[0].currencyFormats[0].currencyFormatLength[0].currencyFormat[0].pattern[0]);
         let beforeCurrencySymbol = true;
         let currencySpacing = " ";
         let monetarySeparatorSymbol = ",";
@@ -45,7 +34,6 @@ const makeRegionFormat = (region, mainLanguage) => {
         if (result) {
             if (ldml = result.ldml) {
                 if ((numbers = ldml.numbers) && numbers[0]) {
-                    //const pattern = numbers[0].currencyFormats[0].currencyFormatLength[0].currencyFormat[0].pattern[0];
                     if ((currencyFormats = numbers[0].currencyFormats) && currencyFormats[0]) {
                         if ((currencyFormatLength = currencyFormats[0].currencyFormatLength) && currencyFormatLength[0]) {
                             if ((currencyFormat = currencyFormatLength[0].currencyFormat) && currencyFormat[0]) {
@@ -58,16 +46,12 @@ const makeRegionFormat = (region, mainLanguage) => {
                         }
 
                     }
-                    // true = #,##0.00 ¤
                     beforeCurrencySymbol = patternString.substr(0,1) !== "¤";
-                    // patternString.match("[ \u00A0]¤") || patternString.match("¤[ \u00A0]");
                     var theMatch;
                     if (theMatch = patternString.match("^¤[ \u00A0]?")) {
-                        // console.log("if " + theMatch[0]);
                         currencySpacing = theMatch[0].length > 1 ? theMatch[0].charAt(1) : "";
                     }
                     else if (theMatch = patternString.split("").reverse().join("").match("¤[ \u00A0]?")) {
-                        // console.log("else");
                         currencySpacing = theMatch[0].length > 1 ? theMatch[0].charAt(1) : "";
                     }
                     if (numbers[0].symbols && numbers[0].symbols[0]) {
@@ -82,10 +66,6 @@ const makeRegionFormat = (region, mainLanguage) => {
             }
         }
         regionFormats[region] = new RegionFormat(mainLanguage, beforeCurrencySymbol, currencySpacing, monetarySeparatorSymbol, monetaryGroupingSeparatorSymbol);
-        //console.log(patternString);
-        //console.log(patternString.split("").reverse().join(""));
-        //console.log(currencySpacing);
-        //console.log(regionFormats);
         console.log("region " + region);
         console.log(Object.keys(regions).length);
         console.log(Object.keys(regionFormats).length);
@@ -96,28 +76,19 @@ const makeRegionFormat = (region, mainLanguage) => {
     // Node.js
     const http = require("http");
 
-    //const url = "http://unicode.org/repos/cldr/tags/release-27-0-1/common/supplemental/supplementalData.xml";
-    // Should loop through all *.xml
     const url = "http://unicode.org/repos/cldr/tags/release-27-0-1/common/main/" + mainLanguage + ".xml";
     let body = "";
     const client = http.get(url, (res) => {
         console.log("Got statusCode: " + res.statusCode);
-        //console.log("Got response: " + res);
         if (res.statusCode !== 200) {
             console.log(url);
         }
         res.on("data", (chunk) => {
-            // console.log("BODY: " + chunk);
             body += chunk;
         });
         res.on("end", () => {
-            //console.log(body);
-            //console.log(body.length);
-            // parse XML
             const xml2js = require("xml2js");
             const parsed = xml2js.parseString(body, handleResult);
-            //console.log("parsed");
-            //console.log(parsed);
         });
     }).on("error", (e) => {
         console.error("Got error: " + e.message);
